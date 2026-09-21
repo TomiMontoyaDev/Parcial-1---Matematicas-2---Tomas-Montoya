@@ -1,173 +1,365 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Módulo 5 · Integral Definida y Área — INTEGRA</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Módulo 5 · Integral Definida y Área — INTEGRA</title>
 
-<link rel="stylesheet" href="../assets/css/design-system.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.30.0/plotly.min.js"></script>
+    <link rel="stylesheet" href="../assets/css/design-system.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.30.0/plotly.min.js"></script>
 
-<style>
-  .mod-hero { padding: 40px 0 24px; }
-  .mod-hero__tag { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-faint); }
-  .mod-hero h1 { font-size: clamp(1.9rem, 3.4vw, 2.6rem); margin: 10px 0 14px; }
-  #plot { width: 100%; height: 380px; }
-  .readout-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 16px; }
-  .readout { flex: 1; min-width: 130px; background: var(--bg-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px 16px; }
-  .readout__label { font-size: 0.72rem; color: var(--text-faint); font-family: var(--font-mono); }
-  .readout__value { font-family: var(--font-mono); font-size: 1.3rem; color: var(--accent); margin-top: 4px; }
-  .section-title { font-size: 1.4rem; margin: 48px 0 20px; }
-</style>
-</head>
-<body>
-
-<nav class="nav">
-  <a href="../index.html" class="nav__back">
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    Volver a módulos
-  </a>
-  <div class="nav__brand">
-    <svg class="nav__brand-mark" viewBox="0 0 22 22" fill="none"><path d="M2 16 Q 7 2, 11 11 T 20 6" stroke="#00D9C0" stroke-width="2" stroke-linecap="round"/></svg>
-    <span class="nav__brand-text">INTEGRA</span>
-  </div>
-</nav>
-
-<main class="wrap">
-
-  <section class="mod-hero">
-    <span class="mod-hero__tag">MÓDULO 05 · INTEGRAL DEFINIDA</span>
-    <h1>Integral Definida y Área bajo la Curva</h1>
-    <p>Todo lo que aproximamos en los módulos 1-4 (Riemann, Trapecio, Simpson) converge a un único valor exacto cuando n → ∞. El Teorema Fundamental del Cálculo nos da un atajo: si conocemos una antiderivada F(x), no necesitamos sumar infinitos rectángulos — basta evaluar F en los extremos.</p>
-  </section>
-
-  <div class="formula-panel reveal">
-    <div data-katex="display">
-      \int_a^b f(x)\,dx = F(b) - F(a) \qquad\qquad \text{Área entre curvas} = \int_a^b |f(x) - g(x)|\,dx
-    </div>
-  </div>
-
-  <h2 class="section-title reveal">Visualizador interactivo — límites ajustables</h2>
-  <div class="visualizer reveal">
-    <div class="visualizer__canvas-wrap"><div id="plot"></div></div>
-    <div class="readout-row">
-      <div class="readout"><div class="readout__label">ÁREA ∫ₐᵇ f(x) dx</div><div class="readout__value" id="areaVal">—</div></div>
-      <div class="readout"><div class="readout__label">F(b)</div><div class="readout__value" id="fbVal">—</div></div>
-      <div class="readout"><div class="readout__label">F(a)</div><div class="readout__value" id="faVal">—</div></div>
-    </div>
-    <div class="visualizer__controls">
-      <div class="control">
-        <div class="control__label"><span>Límite inferior (a)</span><span class="control__value" id="aLabel">0</span></div>
-        <input type="range" id="aSlider" min="-3" max="3" value="0" step="0.1">
+    <style>
+      .mod-hero {
+        padding: 40px 0 24px;
+      }
+      .mod-hero__tag {
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        color: var(--text-faint);
+      }
+      .mod-hero h1 {
+        font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+        margin: 10px 0 14px;
+      }
+      #plot {
+        width: 100%;
+        height: 380px;
+      }
+      .readout-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+      .readout {
+        flex: 1;
+        min-width: 130px;
+        background: var(--bg-raised);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+      }
+      .readout__label {
+        font-size: 0.72rem;
+        color: var(--text-faint);
+        font-family: var(--font-mono);
+      }
+      .readout__value {
+        font-family: var(--font-mono);
+        font-size: 1.3rem;
+        color: var(--accent);
+        margin-top: 4px;
+      }
+      .section-title {
+        font-size: 1.4rem;
+        margin: 48px 0 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="nav">
+      <a href="../index.html" class="nav__back">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M10 12L6 8l4-4"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Volver a módulos
+      </a>
+      <div class="nav__brand">
+        <svg class="nav__brand-mark" viewBox="0 0 22 22" fill="none">
+          <path
+            d="M2 16 Q 7 2, 11 11 T 20 6"
+            stroke="#00D9C0"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+        <span class="nav__brand-text">INTEGRA</span>
       </div>
-      <div class="control">
-        <div class="control__label"><span>Límite superior (b)</span><span class="control__value" id="bLabel">2</span></div>
-        <input type="range" id="bSlider" min="-3" max="3" value="2" step="0.1">
+    </nav>
+
+    <main class="wrap">
+      <section class="mod-hero">
+        <span class="mod-hero__tag">MÓDULO 05 · INTEGRAL DEFINIDA</span>
+        <h1>Integral Definida y Área bajo la Curva</h1>
+        <p>
+          Todo lo que aproximamos en los módulos 1-4 (Riemann, Trapecio,
+          Simpson) converge a un único valor exacto cuando n → ∞. El Teorema
+          Fundamental del Cálculo nos da un atajo: si conocemos una antiderivada
+          F(x), no necesitamos sumar infinitos rectángulos — basta evaluar F en
+          los extremos.
+        </p>
+      </section>
+
+      <div class="formula-panel reveal">
+        <div data-katex="display">
+          \int_a^b f(x)\,dx = F(b) - F(a) \qquad\qquad \text{Área entre curvas}
+          = \int_a^b |f(x) - g(x)|\,dx
+        </div>
       </div>
-    </div>
-  </div>
 
-  <h2 class="section-title reveal">Ejemplos resueltos paso a paso</h2>
+      <h2 class="section-title reveal">
+        Visualizador interactivo — límites ajustables
+      </h2>
+      <div class="visualizer reveal">
+        <div class="visualizer__canvas-wrap"><div id="plot"></div></div>
+        <div class="readout-row">
+          <div class="readout">
+            <div class="readout__label">ÁREA ∫ₐᵇ f(x) dx</div>
+            <div class="readout__value" id="areaVal">—</div>
+          </div>
+          <div class="readout">
+            <div class="readout__label">F(b)</div>
+            <div class="readout__value" id="fbVal">—</div>
+          </div>
+          <div class="readout">
+            <div class="readout__label">F(a)</div>
+            <div class="readout__value" id="faVal">—</div>
+          </div>
+        </div>
+        <div class="visualizer__controls">
+          <div class="control">
+            <div class="control__label">
+              <span>Límite inferior (a)</span
+              ><span class="control__value" id="aLabel">0</span>
+            </div>
+            <input
+              type="range"
+              id="aSlider"
+              min="-3"
+              max="3"
+              value="0"
+              step="0.1"
+            />
+          </div>
+          <div class="control">
+            <div class="control__label">
+              <span>Límite superior (b)</span
+              ><span class="control__value" id="bLabel">2</span>
+            </div>
+            <input
+              type="range"
+              id="bSlider"
+              min="-3"
+              max="3"
+              value="2"
+              step="0.1"
+            />
+          </div>
+        </div>
+      </div>
 
-  <div class="example reveal">
-    <div class="example__head">
-      <h4>Ejemplo 1 — Calcular ∫₀² (3x² − 2x + 1) dx</h4>
-      <svg class="example__chevron" viewBox="0 0 20 20" fill="none"><path d="M5 7l5 6 5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div>
-    <div class="example__body"><div class="example__body-inner">
-      <div class="step"><div class="step__num">1</div><div class="step__content">
-        <div class="step__label">Hallar la antiderivada F(x) término a término</div>
-        <div data-katex>F(x) = x^3 - x^2 + x</div>
-      </div></div>
-      <div class="step"><div class="step__num">2</div><div class="step__content">
-        <div class="step__label">Aplicar el Teorema Fundamental: F(b) − F(a)</div>
-        <div data-katex>F(2) = 8-4+2 = 6, \qquad F(0) = 0</div>
-      </div></div>
-      <div class="step"><div class="step__num">3</div><div class="step__content">
-        <div class="step__label">Restar</div>
-        <div data-katex>\int_0^2 (3x^2-2x+1)\,dx = 6 - 0 = 6</div>
-      </div></div>
-      <div class="result-tag">Resultado: 6</div>
-    </div></div>
-  </div>
+      <h2 class="section-title reveal">Ejemplos resueltos paso a paso</h2>
 
-  <div class="example reveal">
-    <div class="example__head">
-      <h4>Ejemplo 2 — Área entre f(x) = x² y g(x) = 2x</h4>
-      <svg class="example__chevron" viewBox="0 0 20 20" fill="none"><path d="M5 7l5 6 5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div>
-    <div class="example__body"><div class="example__body-inner">
-      <div class="step"><div class="step__num">1</div><div class="step__content">
-        <div class="step__label">Hallar los puntos de intersección — igualar las curvas</div>
-        <div data-katex>x^2 = 2x \ \Rightarrow\ x^2-2x=0 \ \Rightarrow\ x(x-2)=0 \ \Rightarrow\ x=0,\ x=2</div>
-      </div></div>
-      <div class="step"><div class="step__num">2</div><div class="step__content">
-        <div class="step__label">Determinar cuál función está arriba en [0,2] — probar un punto, x=1: g(1)=2 &gt; f(1)=1</div>
-        <div data-katex>\text{Área} = \int_0^2 \big(g(x)-f(x)\big)\,dx = \int_0^2 (2x - x^2)\,dx</div>
-      </div></div>
-      <div class="step"><div class="step__num">3</div><div class="step__content">
-        <div class="step__label">Integrar y evaluar</div>
-        <div data-katex>\Big[x^2 - \dfrac{x^3}{3}\Big]_0^2 = \big(4 - \tfrac{8}{3}\big) - 0 = \dfrac{4}{3}</div>
-      </div></div>
-      <div class="result-tag">Área entre las curvas: 4/3 ≈ 1.333</div>
-    </div></div>
-  </div>
+      <div class="example reveal">
+        <div class="example__head">
+          <h4>Ejemplo 1 — Calcular ∫₀² (3x² − 2x + 1) dx</h4>
+          <svg class="example__chevron" viewBox="0 0 20 20" fill="none">
+            <path
+              d="M5 7l5 6 5-6"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <div class="example__body">
+          <div class="example__body-inner">
+            <div class="step">
+              <div class="step__num">1</div>
+              <div class="step__content">
+                <div class="step__label">
+                  Hallar la antiderivada F(x) término a término
+                </div>
+                <div data-katex>F(x) = x^3 - x^2 + x</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step__num">2</div>
+              <div class="step__content">
+                <div class="step__label">
+                  Aplicar el Teorema Fundamental: F(b) − F(a)
+                </div>
+                <div data-katex>F(2) = 8-4+2 = 6, \qquad F(0) = 0</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step__num">3</div>
+              <div class="step__content">
+                <div class="step__label">Restar</div>
+                <div data-katex>\int_0^2 (3x^2-2x+1)\,dx = 6 - 0 = 6</div>
+              </div>
+            </div>
+            <div class="result-tag">Resultado: 6</div>
+          </div>
+        </div>
+      </div>
 
-</main>
+      <div class="example reveal">
+        <div class="example__head">
+          <h4>Ejemplo 2 — Área entre f(x) = x² y g(x) = 2x</h4>
+          <svg class="example__chevron" viewBox="0 0 20 20" fill="none">
+            <path
+              d="M5 7l5 6 5-6"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <div class="example__body">
+          <div class="example__body-inner">
+            <div class="step">
+              <div class="step__num">1</div>
+              <div class="step__content">
+                <div class="step__label">
+                  Hallar los puntos de intersección — igualar las curvas
+                </div>
+                <div data-katex>
+                  x^2 = 2x \ \Rightarrow\ x^2-2x=0 \ \Rightarrow\ x(x-2)=0 \
+                  \Rightarrow\ x=0,\ x=2
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step__num">2</div>
+              <div class="step__content">
+                <div class="step__label">
+                  Determinar cuál función está arriba en [0,2] — probar un
+                  punto, x=1: g(1)=2 &gt; f(1)=1
+                </div>
+                <div data-katex>
+                  \text{Área} = \int_0^2 \big(g(x)-f(x)\big)\,dx = \int_0^2 (2x
+                  - x^2)\,dx
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step__num">3</div>
+              <div class="step__content">
+                <div class="step__label">Integrar y evaluar</div>
+                <div data-katex>
+                  \Big[x^2 - \dfrac{x^3}{3}\Big]_0^2 = \big(4 -
+                  \tfrac{8}{3}\big) - 0 = \dfrac{4}{3}
+                </div>
+              </div>
+            </div>
+            <div class="result-tag">Área entre las curvas: 4/3 ≈ 1.333</div>
+          </div>
+        </div>
+      </div>
+    </main>
 
-<footer class="footer">
-  <span>INTEGRA · Módulo 05 de 14</span>
-  <a href="../modulo-06-directa/index.html" style="color: var(--accent);">Siguiente: Integración Directa →</a>
-</footer>
+    <footer class="footer">
+      <span>INTEGRA by Tomas Montoya Buitrago · Módulo 05 de 14</span>
+      <a href="../modulo-06-directa/index.html" style="color: var(--accent)"
+        >Siguiente: Integración Directa →</a
+      >
+    </footer>
 
-<script src="../assets/js/common.js"></script>
-<script>
-  // f(x) = 0.4x² - x + 3  (elegida para verse bien en [-3,3])
-  function f(x) { return 0.4 * x * x - x + 3; }
-  function F(x) { return (0.4 / 3) * x ** 3 - 0.5 * x * x + 3 * x; } // antiderivada exacta
+    <script src="../assets/js/common.js"></script>
+    <script>
+      // f(x) = 0.4x² - x + 3  (elegida para verse bien en [-3,3])
+      function f(x) {
+        return 0.4 * x * x - x + 3;
+      }
+      function F(x) {
+        return (0.4 / 3) * x ** 3 - 0.5 * x * x + 3 * x;
+      } // antiderivada exacta
 
-  const aSlider = document.getElementById('aSlider');
-  const bSlider = document.getElementById('bSlider');
-  const aLabel = document.getElementById('aLabel');
-  const bLabel = document.getElementById('bLabel');
+      const aSlider = document.getElementById("aSlider");
+      const bSlider = document.getElementById("bSlider");
+      const aLabel = document.getElementById("aLabel");
+      const bLabel = document.getElementById("bLabel");
 
-  aSlider.addEventListener('input', render);
-  bSlider.addEventListener('input', render);
+      aSlider.addEventListener("input", render);
+      bSlider.addEventListener("input", render);
 
-  function render() {
-    let a = parseFloat(aSlider.value);
-    let b = parseFloat(bSlider.value);
-    if (a > b) { [a, b] = [b, a]; } // por si el usuario cruza los sliders
-    aLabel.textContent = a.toFixed(1);
-    bLabel.textContent = b.toFixed(1);
+      function render() {
+        let a = parseFloat(aSlider.value);
+        let b = parseFloat(bSlider.value);
+        if (a > b) {
+          [a, b] = [b, a];
+        } // por si el usuario cruza los sliders
+        aLabel.textContent = a.toFixed(1);
+        bLabel.textContent = b.toFixed(1);
 
-    const curveX = [], curveY = [];
-    for (let i = 0; i <= 200; i++) { const x = -3 + (i / 200) * 6; curveX.push(x); curveY.push(f(x)); }
+        const curveX = [],
+          curveY = [];
+        for (let i = 0; i <= 200; i++) {
+          const x = -3 + (i / 200) * 6;
+          curveX.push(x);
+          curveY.push(f(x));
+        }
 
-    const fillX = [], fillY = [];
-    for (let i = 0; i <= 100; i++) { const x = a + (i / 100) * (b - a); fillX.push(x); fillY.push(f(x)); }
+        const fillX = [],
+          fillY = [];
+        for (let i = 0; i <= 100; i++) {
+          const x = a + (i / 100) * (b - a);
+          fillX.push(x);
+          fillY.push(f(x));
+        }
 
-    const traces = [
-      { x: curveX, y: curveY, mode: 'lines', line: { color: '#00D9C0', width: 2.5 }, hoverinfo: 'skip', name: 'f(x)' },
-      { x: fillX, y: fillY, mode: 'lines', fill: 'tozeroy', fillcolor: 'rgba(255,107,74,0.2)', line: { color: '#FF6B4A', width: 2 }, hoverinfo: 'skip', name: 'Área' },
-    ];
-    const layout = {
-      margin: { t: 16, r: 16, b: 36, l: 42 },
-      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-      font: { color: '#8B96A8', family: 'JetBrains Mono, monospace', size: 11 },
-      xaxis: { gridcolor: '#2A3344', zerolinecolor: '#3A4560' },
-      yaxis: { gridcolor: '#2A3344', zerolinecolor: '#3A4560' },
-      showlegend: false,
-    };
-    Plotly.newPlot('plot', traces, layout, { displayModeBar: false, responsive: true });
+        const traces = [
+          {
+            x: curveX,
+            y: curveY,
+            mode: "lines",
+            line: { color: "#00D9C0", width: 2.5 },
+            hoverinfo: "skip",
+            name: "f(x)",
+          },
+          {
+            x: fillX,
+            y: fillY,
+            mode: "lines",
+            fill: "tozeroy",
+            fillcolor: "rgba(255,107,74,0.2)",
+            line: { color: "#FF6B4A", width: 2 },
+            hoverinfo: "skip",
+            name: "Área",
+          },
+        ];
+        const layout = {
+          margin: { t: 16, r: 16, b: 36, l: 42 },
+          paper_bgcolor: "transparent",
+          plot_bgcolor: "transparent",
+          font: {
+            color: "#8B96A8",
+            family: "JetBrains Mono, monospace",
+            size: 11,
+          },
+          xaxis: { gridcolor: "#2A3344", zerolinecolor: "#3A4560" },
+          yaxis: { gridcolor: "#2A3344", zerolinecolor: "#3A4560" },
+          showlegend: false,
+        };
+        Plotly.newPlot("plot", traces, layout, {
+          displayModeBar: false,
+          responsive: true,
+        });
 
-    document.getElementById('areaVal').textContent = (F(b) - F(a)).toFixed(4);
-    document.getElementById('fbVal').textContent = F(b).toFixed(4);
-    document.getElementById('faVal').textContent = F(a).toFixed(4);
-  }
-  render();
-</script>
-</body>
+        document.getElementById("areaVal").textContent = (F(b) - F(a)).toFixed(
+          4,
+        );
+        document.getElementById("fbVal").textContent = F(b).toFixed(4);
+        document.getElementById("faVal").textContent = F(a).toFixed(4);
+      }
+      render();
+    </script>
+  </body>
 </html>
