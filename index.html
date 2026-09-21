@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>INTEGRA — Plataforma de Cálculo Integral</title>
+    <meta
+      name="description"
+      content="Plataforma interactiva de métodos numéricos e integración — UTP, Tecnología en Desarrollo de Software"
+    />
+
+    <link rel="stylesheet" href="assets/css/design-system.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
+    ></script>
+
+    <style>
+      /* --- Home específico --- */
+      .hero {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 48px;
+        align-items: center;
+        padding: clamp(48px, 8vw, 96px) 0 clamp(64px, 9vw, 112px);
+      }
+      @media (max-width: 880px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .hero__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--accent);
+        padding: 6px 12px;
+        border: 1px solid var(--accent-dim);
+        border-radius: 100px;
+        margin-bottom: 22px;
+      }
+      .hero__eyebrow-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-glow);
+      }
+
+      .hero h1 {
+        font-size: clamp(2.4rem, 4.6vw, 3.6rem);
+        color: var(--text-primary);
+        margin-bottom: 20px;
+      }
+      .hero h1 em {
+        font-style: normal;
+        color: var(--accent);
+      }
+
+      .hero p.lead {
+        font-size: 1.08rem;
+        margin-bottom: 32px;
+      }
+
+      .hero__actions {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 40px;
+      }
+
+      .hero__stats {
+        display: flex;
+        gap: 32px;
+        flex-wrap: wrap;
+      }
+      .stat__num {
+        font-family: var(--font-display);
+        font-size: 1.6rem;
+        color: var(--text-primary);
+      }
+      .stat__label {
+        font-size: 0.78rem;
+        color: var(--text-faint);
+        font-family: var(--font-mono);
+      }
+
+      .hero__visual {
+        position: relative;
+        aspect-ratio: 1 / 0.82;
+        background: var(--bg-surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+      }
+      #heroCanvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .hero__visual-caption {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 14px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 0.76rem;
+        color: var(--text-secondary);
+        background: linear-gradient(0deg, rgba(13, 17, 23, 0.9), transparent);
+      }
+      .hero__visual-caption .val {
+        color: var(--accent);
+      }
+
+      /* --- Fases --- */
+      .phase-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 28px;
+      }
+      @media (max-width: 720px) {
+        .phase-row {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .phase-card {
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--bg-surface);
+      }
+      .phase-card.is-current {
+        border-color: var(--accent-dim);
+        background: var(--bg-surface-2);
+      }
+      .phase-card__tag {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--text-faint);
+      }
+      .phase-card.is-current .phase-card__tag {
+        color: var(--accent);
+      }
+      .phase-card h3 {
+        font-size: 1.02rem;
+        margin: 8px 0 6px;
+      }
+      .phase-card p {
+        font-size: 0.85rem;
+        margin: 0;
+      }
+
+      .section-head {
+        margin-bottom: 36px;
+      }
+      .section-head h2 {
+        font-size: clamp(1.6rem, 3vw, 2.1rem);
+      }
+      .section-head p {
+        margin-top: 10px;
+      }
+
+      .section-divider {
+        border: none;
+        border-top: 1px solid var(--line);
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="nav">
+      <div class="nav__brand">
+        <svg class="nav__brand-mark" viewBox="0 0 22 22" fill="none">
+          <path
+            d="M2 16 Q 7 2, 11 11 T 20 6"
+            stroke="#00D9C0"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+        <span class="nav__brand-text">INTEGRA</span>
+      </div>
+      <a
+        class="btn btn--ghost"
+        href="https://github.com/"
+        target="_blank"
+        rel="noopener"
+        style="font-size: 0.82rem; padding: 9px 16px"
+      >
+        Ver en GitHub
+      </a>
+    </nav>
+
+    <main class="wrap">
+      <!-- ============ HERO ============ -->
+      <section class="hero">
+        <div>
+          <span class="hero__eyebrow"
+            ><span class="hero__eyebrow-dot"></span> Fase 1 — Parcial 1 · Tomas
+            Montoya Buitrago - UTP 2026-II</span
+          >
+          <h1>El área bajo la curva, <em>construida en vivo</em>.</h1>
+          <p class="lead">
+            Una plataforma interactiva para dominar métodos numéricos y los
+            nueve métodos de integración del curso, con visualizadores que
+            responden a cada parámetro que ajustas — no capturas de pantalla
+            estáticas.
+          </p>
+          <div class="hero__actions">
+            <a href="modulo-01-riemann/index.html" class="btn btn--primary"
+              >Empezar por el Módulo 1</a
+            >
+            <a href="#modulos" class="btn btn--ghost">Ver los 14 módulos</a>
+          </div>
+          <div class="hero__stats">
+            <div>
+              <div class="stat__num">14</div>
+              <div class="stat__label">MÓDULOS</div>
+            </div>
+            <div>
+              <div class="stat__num">6</div>
+              <div class="stat__label">ACTIVOS EN FASE 1</div>
+            </div>
+            <div>
+              <div class="stat__num">70</div>
+              <div class="stat__label">EJERCICIOS BASE</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero__visual">
+          <canvas id="heroCanvas"></canvas>
+          <div class="hero__visual-caption">
+            <span>f(x) = 0.15x² − x + 6</span>
+            <span
+              >R<sub>n</sub> →
+              <span class="val" id="heroApprox">0.00</span></span
+            >
+          </div>
+        </div>
+      </section>
+
+      <hr class="section-divider" />
+
+      <!-- ============ PROYECTO SEMESTRAL ============ -->
+      <section class="section">
+        <div class="section-head reveal">
+          <span class="eyebrow">PROYECTO SEMESTRAL</span>
+          <h2>Tres fases, un solo producto final</h2>
+          <p>
+            Cada parcial construye sobre el anterior. Al cerrar el semestre, los
+            14 módulos quedan compartidos en la red académica como herramienta
+            de estudio.
+          </p>
+        </div>
+
+        <div class="phase-row">
+          <div class="phase-card is-current reveal">
+            <span class="phase-card__tag">FASE 1 — ESTE PARCIAL</span>
+            <h3>Métodos numéricos + Directa</h3>
+            <p>
+              Riemann, Trapecio, Punto Medio, Simpson, Área bajo la curva e
+              Integración Directa.
+            </p>
+          </div>
+          <div class="phase-card reveal">
+            <span class="phase-card__tag">FASE 2 — PARCIAL 2</span>
+            <h3>Sustitución y trascendentes</h3>
+            <p>
+              Sustitución por potencias, exponenciales, logarítmicas y
+              trigonométricas.
+            </p>
+          </div>
+          <div class="phase-card reveal">
+            <span class="phase-card__tag">FASE 3 — PROYECTO FINAL</span>
+            <h3>Técnicas avanzadas</h3>
+            <p>
+              Trigonométricas inversas, hiperbólicas inversas, trinomios y por
+              partes.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <hr class="section-divider" />
+
+      <!-- ============ MÓDULOS ============ -->
+      <section class="section" id="modulos">
+        <div class="section-head reveal">
+          <span class="eyebrow">14 MÓDULOS</span>
+          <h2>Navega por el contenido del curso</h2>
+          <p>
+            Los módulos 1–6 están completamente desarrollados. Los módulos 7–14
+            llegan en las próximas fases.
+          </p>
+        </div>
+
+        <div class="modules-grid" id="modulesGrid"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>INTEGRA · Tecnología en Desarrollo de Software · UTP</span>
+      <span>Cálculo Integral + Desarrollo de Software · 2026-II</span>
+    </footer>
+
+    <script src="assets/js/common.js"></script>
+    <script>
+      // ------------------------------------------------------------
+      // Grid de módulos generado desde datos (evita repetir markup)
+      // ------------------------------------------------------------
+      const MODULES = [
+        {
+          n: 1,
+          slug: "modulo-01-riemann",
+          title: "Sumas de Riemann",
+          desc: "Aproximación izquierda, derecha y punto medio.",
+          phase: 1,
+          active: true,
+        },
+        {
+          n: 2,
+          slug: "modulo-02-trapecio",
+          title: "Regla del Trapecio",
+          desc: "Aproximación lineal por segmentos.",
+          phase: 1,
+          active: true,
+        },
+        {
+          n: 3,
+          slug: "modulo-03-punto-medio",
+          title: "Regla del Punto Medio",
+          desc: "Rectángulos evaluados en el punto medio.",
+          phase: 1,
+          active: true,
+        },
+        {
+          n: 4,
+          slug: "modulo-04-simpson",
+          title: "Regla de Simpson",
+          desc: "Aproximación parabólica, n par.",
+          phase: 1,
+          active: true,
+        },
+        {
+          n: 5,
+          slug: "modulo-05-area",
+          title: "Integral Definida y Área",
+          desc: "Teorema Fundamental del Cálculo.",
+          phase: 1,
+          active: true,
+        },
+        {
+          n: 6,
+          slug: "modulo-06-directa",
+          title: "Integración Directa",
+          desc: "Antiderivadas y reglas básicas.",
+          phase: 1,
+          active: true,
+        },
+        {
+          n: 7,
+          slug: "modulo-07-sustitucion",
+          title: "Sustitución (Potencias)",
+          desc: "Cambio de variable u-du.",
+          phase: 2,
+          active: false,
+        },
+        {
+          n: 8,
+          slug: "modulo-08-exponenciales",
+          title: "Integrales Exponenciales",
+          desc: "e^u y a^x.",
+          phase: 2,
+          active: false,
+        },
+        {
+          n: 9,
+          slug: "modulo-09-logaritmicas",
+          title: "Integrales Logarítmicas",
+          desc: "du/u y formas derivadas.",
+          phase: 2,
+          active: false,
+        },
+        {
+          n: 10,
+          slug: "modulo-10-trigonometricas",
+          title: "Integrales Trigonométricas",
+          desc: "sin, cos, tan, sec², csc².",
+          phase: 2,
+          active: false,
+        },
+        {
+          n: 11,
+          slug: "modulo-11-trig-inversas",
+          title: "Trigonométricas Inversas",
+          desc: "arcsin, arctan.",
+          phase: 3,
+          active: false,
+        },
+        {
+          n: 12,
+          slug: "modulo-12-hiperbolicas",
+          title: "Hiperbólicas Inversas",
+          desc: "Formas con raíces cuadráticas.",
+          phase: 3,
+          active: false,
+        },
+        {
+          n: 13,
+          slug: "modulo-13-trinomio",
+          title: "Trinomio ax² + bx + c",
+          desc: "Completar cuadrado + sustitución.",
+          phase: 3,
+          active: false,
+        },
+        {
+          n: 14,
+          slug: "modulo-14-partes",
+          title: "Integración por Partes",
+          desc: "u·dv, regla LIATE.",
+          phase: 3,
+          active: false,
+        },
+      ];
+
+      const grid = document.getElementById("modulesGrid");
+      grid.innerHTML = MODULES.map((m) => {
+        const phaseLabel = m.active
+          ? "DISPONIBLE"
+          : `PRÓXIMAMENTE · FASE ${m.phase}`;
+        const cardClass = m.active
+          ? "module-card module-card--active reveal"
+          : "module-card module-card--locked reveal";
+        const inner = `
+      <div>
+        <span class="module-card__num">MÓD. ${String(m.n).padStart(2, "0")}</span>
+        <h3 class="module-card__title">${m.title}</h3>
+        <p class="module-card__desc">${m.desc}</p>
+      </div>
+      <span class="module-card__phase">${phaseLabel}</span>
+    `;
+        return m.active
+          ? `<a href="${m.slug}/index.html" class="${cardClass}">${inner}</a>`
+          : `<div class="${cardClass}">${inner}</div>`;
+      }).join("");
+
+      // Re-observar los nuevos .reveal insertados dinámicamente
+      document.querySelectorAll(".modules-grid .reveal").forEach((el) => {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add("is-visible");
+                io.unobserve(e.target);
+              }
+            });
+          },
+          { threshold: 0.1 },
+        );
+        io.observe(el);
+      });
+
+      // ------------------------------------------------------------
+      // HERO: Riemann sumándose en vivo sobre f(x) = 0.15x² - x + 6
+      // Único momento de motion orquestado — coherente con el contenido
+      // ------------------------------------------------------------
+      const canvas = document.getElementById("heroCanvas");
+      const ctx = canvas.getContext("2d");
+      const approxEl = document.getElementById("heroApprox");
+
+      function f(x) {
+        return 0.15 * x * x - x + 6;
+      }
+
+      const domain = { a: -2, b: 10 };
+      let dpr = window.devicePixelRatio || 1;
+      let W, H, padding;
+
+      function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        W = rect.width;
+        H = rect.height;
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        canvas.style.width = W + "px";
+        canvas.style.height = H + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        padding = { top: 30, right: 24, bottom: 30, left: 24 };
+      }
+
+      function toPx(x, y) {
+        const plotW = W - padding.left - padding.right;
+        const plotH = H - padding.top - padding.bottom;
+        const yMax = 9,
+          yMin = 0;
+        return {
+          x: padding.left + ((x - domain.a) / (domain.b - domain.a)) * plotW,
+          y: padding.top + (1 - (y - yMin) / (yMax - yMin)) * plotH,
+        };
+      }
+
+      let n = 4;
+      let animFrame = null;
+      let growth = 0; // 0 → 1, progreso de "crecimiento" de las barras
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Curva
+        ctx.beginPath();
+        ctx.strokeStyle = "#00D9C0";
+        ctx.lineWidth = 2.4;
+        for (let px = 0; px <= 200; px++) {
+          const x = domain.a + (px / 200) * (domain.b - domain.a);
+          const p = toPx(x, f(x));
+          px === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+        }
+        ctx.stroke();
+
+        // Rectángulos de Riemann (punto medio), creciendo con `growth`
+        const dx = (domain.b - domain.a) / n;
+        let sum = 0;
+        for (let i = 0; i < n; i++) {
+          const x0 = domain.a + i * dx;
+          const xm = x0 + dx / 2;
+          const h = f(xm);
+          sum += h * dx;
+
+          const barTop = toPx(xm, h * growth);
+          const base = toPx(xm, 0);
+          const wPx = toPx(x0 + dx, 0).x - toPx(x0, 0).x;
+
+          ctx.fillStyle = "rgba(0, 217, 192, 0.18)";
+          ctx.strokeStyle = "rgba(0, 217, 192, 0.55)";
+          ctx.lineWidth = 1;
+          const rectX = toPx(x0, 0).x + 1;
+          const rectY = barTop.y;
+          const rectH = base.y - barTop.y;
+          ctx.fillRect(rectX, rectY, wPx - 2, rectH);
+          ctx.strokeRect(rectX, rectY, wPx - 2, rectH);
+        }
+
+        approxEl.textContent = (sum * growth).toFixed(2);
+
+        if (growth < 1) {
+          growth += 0.02;
+          animFrame = requestAnimationFrame(draw);
+        } else {
+          // Ciclo: espera, luego sube n y reinicia
+          setTimeout(() => {
+            n = n >= 24 ? 4 : n + 4;
+            growth = 0;
+            animFrame = requestAnimationFrame(draw);
+          }, 900);
+        }
+      }
+
+      window.addEventListener("resize", () => {
+        resize();
+      });
+      resize();
+      requestAnimationFrame(draw);
+    </script>
+  </body>
+</html>

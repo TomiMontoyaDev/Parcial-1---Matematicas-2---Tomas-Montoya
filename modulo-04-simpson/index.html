@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Módulo 4 · Regla de Simpson — INTEGRA</title>
+
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.30.0/plotly.min.js"></script>
+
+<style>
+  .mod-hero { padding: 40px 0 24px; }
+  .mod-hero__tag { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-faint); }
+  .mod-hero h1 { font-size: clamp(1.9rem, 3.4vw, 2.6rem); margin: 10px 0 14px; }
+  #plot { width: 100%; height: 380px; }
+  .readout-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 16px; }
+  .readout { flex: 1; min-width: 130px; background: var(--bg-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px 16px; }
+  .readout__label { font-size: 0.72rem; color: var(--text-faint); font-family: var(--font-mono); }
+  .readout__value { font-family: var(--font-mono); font-size: 1.3rem; color: var(--accent); margin-top: 4px; }
+  .readout--exact .readout__value { color: var(--result); }
+  .section-title { font-size: 1.4rem; margin: 48px 0 20px; }
+  .n-warning {
+    display: none; align-items: center; gap: 10px;
+    background: rgba(242, 201, 76, 0.08); border: 1px solid #8A7326; color: var(--warn);
+    border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.85rem; margin-top: 14px;
+  }
+  .n-warning.is-visible { display: flex; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav__back">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Volver a módulos
+  </a>
+  <div class="nav__brand">
+    <svg class="nav__brand-mark" viewBox="0 0 22 22" fill="none"><path d="M2 16 Q 7 2, 11 11 T 20 6" stroke="#00D9C0" stroke-width="2" stroke-linecap="round"/></svg>
+    <span class="nav__brand-text">INTEGRA</span>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <section class="mod-hero">
+    <span class="mod-hero__tag">MÓDULO 04 · MÉTODOS NUMÉRICOS</span>
+    <h1>Regla de Simpson</h1>
+    <p>En vez de aproximar con líneas rectas (trapecios), Simpson ajusta una parábola a cada par de subintervalos. Como una parábola necesita 3 puntos para definirse, <strong style="color: var(--warn);">n debe ser par</strong> — de ahí que la fórmula agrupe los índices impares (coeficiente 4) y los pares (coeficiente 2) de forma distinta.</p>
+  </section>
+
+  <div class="formula-panel reveal">
+    <div data-katex="display">
+      S_n = \frac{\Delta x}{3}\Big[f(x_0) + 4\!\!\sum_{i\ impar}\!\! f(x_i) + 2\!\!\sum_{i\ par}\!\! f(x_i) + f(x_n)\Big], \quad n \text{ par}
+    </div>
+  </div>
+
+  <h2 class="section-title reveal">Visualizador interactivo</h2>
+  <div class="visualizer reveal">
+    <div class="visualizer__canvas-wrap"><div id="plot"></div></div>
+    <div class="n-warning" id="nWarning">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="1.6"/></svg>
+      <span>n debe ser par para Simpson — se ajustó automáticamente.</span>
+    </div>
+    <div class="readout-row">
+      <div class="readout"><div class="readout__label">APROXIMACIÓN Sₙ</div><div class="readout__value" id="approxVal">—</div></div>
+      <div class="readout readout--exact"><div class="readout__label">VALOR EXACTO</div><div class="readout__value" id="exactVal">—</div></div>
+      <div class="readout"><div class="readout__label">ERROR ABSOLUTO</div><div class="readout__value" id="errorVal">—</div></div>
+    </div>
+    <div class="visualizer__controls">
+      <div class="control">
+        <div class="control__label"><span>Número de particiones (n, par)</span><span class="control__value" id="nLabel">4</span></div>
+        <input type="range" id="nSlider" min="2" max="30" value="4" step="2">
+      </div>
+      <div class="control">
+        <div class="control__label"><span>Función</span></div>
+        <select id="fnSelect" style="background: var(--bg-raised); color: var(--text-primary); border: 1px solid var(--line-bright); border-radius: 6px; padding: 9px 12px; font-family: var(--font-mono); font-size: 0.85rem;">
+          <option value="quad">f(x) = x² en [0, 2]</option>
+          <option value="sin">f(x) = sin(x) en [0, π]</option>
+          <option value="inv">f(x) = 1/x en [1, 3]</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title reveal">Ejemplos resueltos paso a paso</h2>
+
+  <div class="example reveal">
+    <div class="example__head">
+      <h4>Ejemplo 1 — Aproximar ∫₀² x² dx usando Simpson con n = 4</h4>
+      <svg class="example__chevron" viewBox="0 0 20 20" fill="none"><path d="M5 7l5 6 5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="example__body"><div class="example__body-inner">
+      <div class="step"><div class="step__num">1</div><div class="step__content">
+        <div class="step__label">Verificar que n es par y calcular Δx</div>
+        <div data-katex>n=4 \text{ (par ✓)}, \qquad \Delta x = \dfrac{2-0}{4} = 0.5</div>
+      </div></div>
+      <div class="step"><div class="step__num">2</div><div class="step__content">
+        <div class="step__label">Evaluar f en los 5 puntos</div>
+        <div data-katex>f(0){=}0,\ f(0.5){=}0.25,\ f(1){=}1,\ f(1.5){=}2.25,\ f(2){=}4</div>
+      </div></div>
+      <div class="step"><div class="step__num">3</div><div class="step__content">
+        <div class="step__label">Aplicar la fórmula: índices impares ×4, pares (interiores) ×2</div>
+        <div data-katex>S_4 = \dfrac{0.5}{3}\big[0 + 4(0.25+2.25) + 2(1) + 4\big] = \dfrac{0.5}{3}[0+10+2+4] = 2.\overline{6}</div>
+      </div></div>
+      <div class="result-tag">Valor exacto: 8/3 = 2.667 — Simpson da el valor exacto porque x² es polinomio de grado ≤ 3</div>
+    </div></div>
+  </div>
+
+  <div class="example reveal">
+    <div class="example__head">
+      <h4>Ejemplo 2 — Aproximar ∫₀^π sin(x) dx usando S₄</h4>
+      <svg class="example__chevron" viewBox="0 0 20 20" fill="none"><path d="M5 7l5 6 5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="example__body"><div class="example__body-inner">
+      <div class="step"><div class="step__num">1</div><div class="step__content">
+        <div class="step__label">n = 4 es par, calcular Δx</div>
+        <div data-katex>\Delta x = \dfrac{\pi - 0}{4} \approx 0.7854</div>
+      </div></div>
+      <div class="step"><div class="step__num">2</div><div class="step__content">
+        <div class="step__label">Evaluar seno en los 5 puntos</div>
+        <div data-katex>f(0){=}0,\ f(0.785){\approx}0.707,\ f(1.571){=}1,\ f(2.356){\approx}0.707,\ f(3.1416){\approx}0</div>
+      </div></div>
+      <div class="step"><div class="step__num">3</div><div class="step__content">
+        <div class="step__label">Aplicar la fórmula de Simpson</div>
+        <div data-katex>S_4 = \dfrac{0.7854}{3}\big[0 + 4(0.707+0.707) + 2(1) + 0\big] \approx 2.0045</div>
+      </div></div>
+      <div class="result-tag">Valor exacto: 2 → error ≈ 0.0045, notablemente mejor que L₄, R₄, M₄ o T₄ con el mismo n</div>
+    </div></div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <span>INTEGRA · Módulo 04 de 14</span>
+  <a href="../modulo-05-area/index.html" style="color: var(--accent);">Siguiente: Área bajo la curva →</a>
+</footer>
+
+<script src="../assets/js/common.js"></script>
+<script>
+  const FUNCTIONS = {
+    quad: { f: x => x * x,       a: 0, b: 2,          exact: 8 / 3,        label: 'f(x) = x²' },
+    sin:  { f: x => Math.sin(x), a: 0, b: Math.PI,     exact: 2,            label: 'f(x) = sin(x)' },
+    inv:  { f: x => 1 / x,       a: 1, b: 3,           exact: Math.log(3),  label: 'f(x) = 1/x' },
+  };
+  const nSlider = document.getElementById('nSlider');
+  const nLabel = document.getElementById('nLabel');
+  const fnSelect = document.getElementById('fnSelect');
+  const nWarning = document.getElementById('nWarning');
+  let currentFn = 'quad';
+
+  nSlider.addEventListener('input', () => {
+    let n = parseInt(nSlider.value, 10);
+    if (n % 2 !== 0) { n += 1; nSlider.value = n; nWarning.classList.add('is-visible'); }
+    else { nWarning.classList.remove('is-visible'); }
+    nLabel.textContent = n;
+    render();
+  });
+  fnSelect.addEventListener('change', () => { currentFn = fnSelect.value; render(); });
+
+  function render() {
+    const { f, a, b, exact } = FUNCTIONS[currentFn];
+    const n = parseInt(nSlider.value, 10);
+    const dx = (b - a) / n;
+
+    const curveX = [], curveY = [];
+    for (let i = 0; i <= 200; i++) { const x = a + (i / 200) * (b - a); curveX.push(x); curveY.push(f(x)); }
+
+    // Simpson: parábola por cada par de subintervalos [x0,x2]
+    const parabX = [], parabY = [];
+    let sum = 0;
+    for (let i = 0; i < n; i += 2) {
+      const x0 = a + i * dx, x1 = x0 + dx, x2 = x0 + 2 * dx;
+      const y0 = f(x0), y1 = f(x1), y2 = f(x2);
+      sum += (dx / 3) * (y0 + 4 * y1 + y2);
+
+      // Interpolación de Lagrange para dibujar la parábola exacta por (x0,y0),(x1,y1),(x2,y2)
+      for (let k = 0; k <= 20; k++) {
+        const x = x0 + (k / 20) * (x2 - x0);
+        const L0 = ((x - x1) * (x - x2)) / ((x0 - x1) * (x0 - x2));
+        const L1 = ((x - x0) * (x - x2)) / ((x1 - x0) * (x1 - x2));
+        const L2 = ((x - x0) * (x - x1)) / ((x2 - x0) * (x2 - x1));
+        parabX.push(x); parabY.push(y0 * L0 + y1 * L1 + y2 * L2);
+      }
+      parabX.push(null); parabY.push(null); // corta la línea entre pares
+    }
+
+    const traces = [
+      { x: curveX, y: curveY, mode: 'lines', line: { color: '#00D9C0', width: 2 }, hoverinfo: 'skip', name: 'f(x)' },
+      { x: parabX, y: parabY, mode: 'lines', fill: 'tozeroy', fillcolor: 'rgba(255,107,74,0.14)', line: { color: '#FF6B4A', width: 2 }, hoverinfo: 'skip', name: 'Parábolas de Simpson' },
+    ];
+    const layout = {
+      margin: { t: 16, r: 16, b: 36, l: 42 },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      font: { color: '#8B96A8', family: 'JetBrains Mono, monospace', size: 11 },
+      xaxis: { gridcolor: '#2A3344', zerolinecolor: '#3A4560' },
+      yaxis: { gridcolor: '#2A3344', zerolinecolor: '#3A4560' },
+      showlegend: false,
+    };
+    Plotly.newPlot('plot', traces, layout, { displayModeBar: false, responsive: true });
+
+    document.getElementById('approxVal').textContent = sum.toFixed(4);
+    document.getElementById('exactVal').textContent = exact.toFixed(4);
+    document.getElementById('errorVal').textContent = Math.abs(exact - sum).toFixed(4);
+  }
+  render();
+</script>
+</body>
+</html>
